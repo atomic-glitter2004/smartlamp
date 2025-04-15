@@ -16,7 +16,7 @@ void setup() {
 }
 
 void loop() {
-  // --- PIR MOTION SENSOR ---
+  //PIR MOTION SENSOR
   val = digitalRead(sensor);   
   if (val == HIGH && state == LOW) {           
     Serial.println("Motion detected"); 
@@ -27,14 +27,13 @@ void loop() {
     state = LOW;       
   }
 
-  // --- ULTRASONIC SENSOR ---
+  //ULTRASONIC SENSOR
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
   digitalWrite(trigPin, HIGH);
   delayMicroseconds(10);
   digitalWrite(trigPin, LOW);
 
-  // added timeout in case there's no echo received
   duration = pulseIn(echoPin, HIGH, 30000); // 30ms timeout
   distance = (duration * 0.0343) / 2;
 
