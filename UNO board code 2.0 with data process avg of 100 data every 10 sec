@@ -1,0 +1,43 @@
+const int echoPin = 11;
+const int trigPin = 10;
+
+long duration;
+float distance;
+float totalDistance = 0;
+int readingCount = 0;
+unsigned long lastOutputTime = 0;
+const unsigned long outputInterval = 10000; // 10 seconds
+
+void setup() {
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  Serial.begin(9600);
+}
+
+void loop() {
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  duration = pulseIn(echoPin, HIGH, 30000);
+  distance = (duration * 0.0343) / 2;
+
+  totalDistance += distance;
+  readingCount++;
+
+  if ((millis() - lastOutputTime >= outputInterval) && readingCount >= 100) {
+    float averageDistance = totalDistance / readingCount;
+
+    Serial.print("Avg Distance (last 100 readings): ");
+    Serial.print(averageDistance);
+    Serial.println(" cm");
+
+    totalDistance = 0;
+    readingCount = 0;
+    lastOutputTime = millis();
+  }
+
+  delay(100); // reading every 100 ms
+}
