@@ -1,10 +1,9 @@
-/
-const int sensor = 5;// PIR motion sensor signal pin
-int state = LOW;// Previous state of motion
-int val = 0;// Current sensor value
+const int sensor = 5;      // PIR motion sensor signal pin
+int state = LOW;           // Previous state of motion
+int val = 0;               // Current sensor value
 
-const int trigPin = 11;// Ultrasonic sensor trig pin
-const int echoPin = 10;// Ultrasonic sensor echo pin
+const int trigPin = 10;    // Ultrasonic sensor trig pin
+const int echoPin = 11;    // Ultrasonic sensor echo pin
 
 float duration, distance;
 
@@ -17,34 +16,31 @@ void setup() {
 }
 
 void loop() {
-  //PIR MOTION SENSOR
+  // --- PIR MOTION SENSOR ---
   val = digitalRead(sensor);   
-  if (val == HIGH) {           
-    if (state == LOW) {
-      Serial.println("Motion detected"); 
-      state = HIGH;       
-    }
+  if (val == HIGH && state == LOW) {           
+    Serial.println("Motion detected"); 
+    state = HIGH;       
   } 
-  else {
-    if (state == HIGH) {
-      Serial.println("Motion stopped");
-      state = LOW;       
-    }
+  else if (val == LOW && state == HIGH) {
+    Serial.println("No motion");
+    state = LOW;       
   }
 
-  //ULTRASONIC SENSOR
+  // --- ULTRASONIC SENSOR ---
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
   digitalWrite(trigPin, HIGH);
   delayMicroseconds(10);
   digitalWrite(trigPin, LOW);
 
-  duration = pulseIn(echoPin, HIGH);
+  // added timeout in case there's no echo received
+  duration = pulseIn(echoPin, HIGH, 30000); // 30ms timeout
   distance = (duration * 0.0343) / 2;
 
   Serial.print("Distance: ");
   Serial.print(distance);
   Serial.println(" cm");
 
-  delay(100);
+  delay(100); 
 }
