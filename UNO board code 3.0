@@ -1,0 +1,62 @@
+const int trigPin = 10;
+const int echoPin = 11;
+const int pirPin = 5; 
+
+long duration;
+float distance;
+float totalDistance = 0;
+int readingCount = 0;
+bool motionDetected = false;
+
+unsigned long lastOutputTime = 0;
+const unsigned long outputInterval = 10000; 
+
+void setup() {
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  pinMode(pirPin, INPUT);
+  Serial.begin(9600);
+}
+
+void loop() {
+  //Ultrasonic Sensor
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  duration = pulseIn(echoPin, HIGH, 30000);
+  distance = (duration * 0.0343) / 2;
+
+  totalDistance += distance;
+  readingCount++;
+
+  //PIR
+  int pirVal = digitalRead(pirPin);
+  if (pirVal == HIGH) {
+    motionDetected = true; 
+  }
+
+
+  if ((millis() - lastOutputTime >= outputInterval) && readingCount >= 100) {
+    float averageDistance = totalDistance / readingCount;
+
+    Serial.print("Avg Distance (100 readings): ");
+    Serial.print(averageDistance);
+    Serial.println(" cm");
+
+    if (motionDetected) {
+      Serial.println("Motion");
+    } else {
+      Serial.println("No motion");
+    }
+
+    totalDistance = 0;
+    readingCount = 0;
+    motionDetected = false;
+    lastOutputTime = millis();
+  }
+
+  delay(100); 
+}
