@@ -1,0 +1,72 @@
+const int trigPin = 10;
+const int echoPin = 11;
+const int pirPin = 5; 
+
+long duration;
+float distance;
+float totalDistance = 0;
+int readingCount = 0;
+bool motionDetected = false;
+
+unsigned long lastOutputTime = 0;
+const unsigned long outputInterval = 10000; //pir sensor is too sensitive which i tried to fix with tring 5 sec time which didnt work
+unsigned long pirHighStart = 0;
+const unsigned long motionThreshold = 3000; //3 sec motion means motion
+
+void setup() {
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  pinMode(pirPin, INPUT);
+  Serial.begin(9600);
+}
+
+void loop() {
+//ultrasonic sensor
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  duration = pulseIn(echoPin, HIGH, 30000);
+  distance = (duration * 0.0343) / 2;
+
+  totalDistance += distance;
+  readingCount++;
+
+  int pirVal = digitalRead(pirPin);
+
+  if (pirVal == HIGH) {
+    if (pirHighStart == 0) {
+      pirHighStart = millis();
+    }
+    if (millis() - pirHighStart >= motionThreshold) {
+      motionDetected = true;
+    }
+  } else {
+    pirHighStart = 0;
+  }
+
+
+  if ((millis() - lastOutputTime >= outputInterval) && readingCount >= 1000) {
+    float averageDistance = totalDistance / readingCount;
+
+    Serial.print("Avg Distance (100 readings): ");
+    Serial.print(averageDistance);
+    Serial.println(" cm");
+
+    if (motionDetected) {
+      Serial.println("Motion detected");
+    } else {
+      Serial.println("No motion");
+    }
+
+    totalDistance = 0;
+    readingCount = 0;
+    motionDetected = false;
+    pirHighStart = 0;
+    lastOutputTime = millis();
+  }
+
+  delay(100); 
+}
